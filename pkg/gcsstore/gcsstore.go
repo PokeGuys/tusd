@@ -145,7 +145,7 @@ func (upload gcsUpload) GetInfo(ctx context.Context) (handler.FileInfo, error) {
 		ID:     i,
 	}
 
-	r, err := store.Service.ReadObject(ctx, params)
+	attr, err := store.Service.GetObjectAttrs(ctx, params)
 	if err != nil {
 		if err == storage.ErrObjectNotExist {
 			return info, handler.ErrNotFound
@@ -153,13 +153,7 @@ func (upload gcsUpload) GetInfo(ctx context.Context) (handler.FileInfo, error) {
 		return info, err
 	}
 
-	buf := make([]byte, r.Size())
-	_, err = r.Read(buf)
-	if err != nil {
-		return info, err
-	}
-
-	if err := json.Unmarshal(buf, &info); err != nil {
+	if err := json.Unmarshal([]byte(attr.Metadata["Info"]), &info); err != nil {
 		return info, err
 	}
 
@@ -225,7 +219,7 @@ func (upload gcsUpload) GetInfo(ctx context.Context) (handler.FileInfo, error) {
 	}
 
 	info.Offset = offset
-	err = store.writeInfo(ctx, store.keyWithPrefix(id), info)
+	err = store.updateInfo(ctx, store.keyWithPrefix(id), info)
 	if err != nil {
 		return info, err
 	}
@@ -252,7 +246,22 @@ func (store GCSStore) writeInfo(ctx context.Context, id string, info handler.Fil
 		return err
 	}
 
-	return nil
+	return store.updateInfo(ctx, id, info)
+}
+
+func (store GCSStore) updateInfo(ctx context.Context, id string, info handler.FileInfo) error {
+	infoJSON, _ := json.Marshal(info)
+	infoMeta := map[string]string{
+		"Info": string(infoJSON),
+	}
+
+	i := fmt.Sprintf("%s.info", id)
+	params := GCSObjectParams{
+		Bucket: store.Bucket,
+		ID:     i,
+	}
+
+	return store.Service.SetObjectMetadata(ctx, params, infoMeta)
 }
 
 func (upload gcsUpload) FinishUpload(ctx context.Context) error {
