@@ -67,6 +67,7 @@ type GCSAPI interface {
 	WriteObject(ctx context.Context, params GCSObjectParams, r io.Reader) (int64, error)
 	ComposeObjects(ctx context.Context, params GCSComposeParams) error
 	FilterObjects(ctx context.Context, params GCSFilterParams) ([]string, error)
+	GetObjectAttrs(ctx context.Context, params GCSObjectParams) (*storage.ObjectAttrs, error)
 }
 
 // GCSService holds the cloud.google.com/go/storage client
