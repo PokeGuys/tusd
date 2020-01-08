@@ -693,6 +693,11 @@ func (handler *UnroutedHandler) finishUploadIfComplete(ctx context.Context, uplo
 // GetFile handles requests to download a file using a GET request. This is not
 // part of the specification.
 func (handler *UnroutedHandler) GetFile(w http.ResponseWriter, r *http.Request) {
+	if !handler.composer.UsesGetReader {
+		handler.sendError(w, r, ErrNotImplemented)
+		return
+	}
+
 	ctx := context.Background()
 
 	id, err := extractIDFromPath(r.URL.Path)
