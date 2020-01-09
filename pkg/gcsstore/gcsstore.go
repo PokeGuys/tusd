@@ -76,8 +76,8 @@ func (store GCSStore) NewUpload(ctx context.Context, info handler.FileInfo) (han
 }
 
 type GCSUpload struct {
-	id    string
-	store *GCSStore
+	ID    string
+	Store *GCSStore
 }
 
 func (store GCSStore) GetUpload(ctx context.Context, id string) (handler.Upload, error) {
@@ -89,8 +89,8 @@ func (store GCSStore) AsTerminatableUpload(upload handler.Upload) handler.Termin
 }
 
 func (upload GCSUpload) WriteChunk(ctx context.Context, offset int64, src io.Reader) (int64, error) {
-	id := upload.id
-	store := upload.store
+	id := upload.ID
+	store := upload.Store
 
 	prefix := fmt.Sprintf("%s_", store.keyWithPrefix(id))
 	filterParams := GCSFilterParams{
@@ -134,8 +134,8 @@ func (upload GCSUpload) WriteChunk(ctx context.Context, offset int64, src io.Rea
 const CONCURRENT_SIZE_REQUESTS = 32
 
 func (upload GCSUpload) GetInfo(ctx context.Context) (handler.FileInfo, error) {
-	id := upload.id
-	store := upload.store
+	id := upload.ID
+	store := upload.Store
 
 	info := handler.FileInfo{}
 	i := fmt.Sprintf("%s.info", store.keyWithPrefix(id))
@@ -265,8 +265,8 @@ func (store GCSStore) updateInfo(ctx context.Context, id string, info handler.Fi
 }
 
 func (upload GCSUpload) FinishUpload(ctx context.Context) error {
-	id := upload.id
-	store := upload.store
+	id := upload.ID
+	store := upload.Store
 
 	prefix := fmt.Sprintf("%s_", store.keyWithPrefix(id))
 	filterParams := GCSFilterParams{
@@ -314,8 +314,8 @@ func (upload GCSUpload) FinishUpload(ctx context.Context) error {
 }
 
 func (upload GCSUpload) Terminate(ctx context.Context) error {
-	id := upload.id
-	store := upload.store
+	id := upload.ID
+	store := upload.Store
 
 	filterParams := GCSFilterParams{
 		Bucket: store.Bucket,
@@ -331,8 +331,8 @@ func (upload GCSUpload) Terminate(ctx context.Context) error {
 }
 
 func (upload GCSUpload) GetReader(ctx context.Context) (io.Reader, error) {
-	id := upload.id
-	store := upload.store
+	id := upload.ID
+	store := upload.Store
 
 	params := GCSObjectParams{
 		Bucket: store.Bucket,
