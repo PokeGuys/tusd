@@ -69,26 +69,26 @@ func (store GCSStore) NewUpload(ctx context.Context, info handler.FileInfo) (han
 
 	err := store.writeInfo(ctx, store.keyWithPrefix(info.ID), info)
 	if err != nil {
-		return &gcsUpload{info.ID, &store}, err
+		return &GCSUpload{info.ID, &store}, err
 	}
 
-	return &gcsUpload{info.ID, &store}, nil
+	return &GCSUpload{info.ID, &store}, nil
 }
 
-type gcsUpload struct {
+type GCSUpload struct {
 	id    string
 	store *GCSStore
 }
 
 func (store GCSStore) GetUpload(ctx context.Context, id string) (handler.Upload, error) {
-	return &gcsUpload{id, &store}, nil
+	return &GCSUpload{id, &store}, nil
 }
 
 func (store GCSStore) AsTerminatableUpload(upload handler.Upload) handler.TerminatableUpload {
-	return upload.(*gcsUpload)
+	return upload.(*GCSUpload)
 }
 
-func (upload gcsUpload) WriteChunk(ctx context.Context, offset int64, src io.Reader) (int64, error) {
+func (upload GCSUpload) WriteChunk(ctx context.Context, offset int64, src io.Reader) (int64, error) {
 	id := upload.id
 	store := upload.store
 
@@ -133,7 +133,7 @@ func (upload gcsUpload) WriteChunk(ctx context.Context, offset int64, src io.Rea
 
 const CONCURRENT_SIZE_REQUESTS = 32
 
-func (upload gcsUpload) GetInfo(ctx context.Context) (handler.FileInfo, error) {
+func (upload GCSUpload) GetInfo(ctx context.Context) (handler.FileInfo, error) {
 	id := upload.id
 	store := upload.store
 
@@ -264,7 +264,7 @@ func (store GCSStore) updateInfo(ctx context.Context, id string, info handler.Fi
 	return store.Service.SetObjectMetadata(ctx, params, infoMeta)
 }
 
-func (upload gcsUpload) FinishUpload(ctx context.Context) error {
+func (upload GCSUpload) FinishUpload(ctx context.Context) error {
 	id := upload.id
 	store := upload.store
 
@@ -313,7 +313,7 @@ func (upload gcsUpload) FinishUpload(ctx context.Context) error {
 	return nil
 }
 
-func (upload gcsUpload) Terminate(ctx context.Context) error {
+func (upload GCSUpload) Terminate(ctx context.Context) error {
 	id := upload.id
 	store := upload.store
 
@@ -330,7 +330,7 @@ func (upload gcsUpload) Terminate(ctx context.Context) error {
 	return nil
 }
 
-func (upload gcsUpload) GetReader(ctx context.Context) (io.Reader, error) {
+func (upload GCSUpload) GetReader(ctx context.Context) (io.Reader, error) {
 	id := upload.id
 	store := upload.store
 
